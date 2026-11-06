@@ -48,3 +48,6 @@ class EnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrollment
         fields = ["id", "student_name", "student_email"]
+
+    def validate_student_email(self, value):
+        return value.strip().lower()

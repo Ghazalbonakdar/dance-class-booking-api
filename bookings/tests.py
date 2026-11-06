@@ -233,3 +233,59 @@ class DanceClassAPITests(APITestCase):
 
         self.dance_class.refresh_from_db()
         self.assertEqual(self.dance_class.capacity, 2)
+
+    def test_student_cannot_enroll_with_email_different_case(self):
+        first_response = self.client.post(
+            self.enroll_url,
+            {
+                "student_name": "Sara",
+                "student_email": "sara@example.com",
+            },
+            format="json",
+        )
+
+        second_response = self.client.post(
+            self.enroll_url,
+            {
+                "student_name": "Sara",
+                "student_email": "SARA@EXAMPLE.COM",
+            },
+            format="json",
+        )
+
+        self.assertEqual(
+            first_response.status_code,
+            status.HTTP_201_CREATED,
+        )
+        self.assertEqual(
+            second_response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertEqual(self.dance_class.enrollments.count(), 1)
+
+    # 9. Cancelling an enrollment that doesn't exist
+    def test_cannot_cancel_nonexistent_enrollment(self):
+        response = self.client.post(
+            self.cancel_url,
+            {"student_email": "unknown@example.com"},
+            format="json",
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+
+
+    # 10. Cancelling without an email is rejected
+    def test_cannot_cancel_without_email(self):
+        response = self.client.post(
+            self.cancel_url,
+            {},
+            format="json",
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )

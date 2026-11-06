@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.db import transaction
 
 from .models import DanceClass, Enrollment
 from .serializers import DanceClassSerializer, EnrollmentSerializer
@@ -56,9 +57,12 @@ def class_detail(request, pk):
 
 
 @api_view(["POST"])
+@transaction.atomic
 def enroll_student(request, pk):
-    dance_class = get_object_or_404(DanceClass, pk=pk)
-
+    dance_class = get_object_or_404(
+    DanceClass.objects.select_for_update(),
+    pk=pk,
+    )
     serializer = EnrollmentSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(

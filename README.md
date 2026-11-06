@@ -127,3 +127,10 @@ danceclassbooking/
 ## License
 
 This project was created as an educational programming assignment.
+
+## Running Tests
+
+Run the test suite with:
+
+```bash
+python3 manage.py test
